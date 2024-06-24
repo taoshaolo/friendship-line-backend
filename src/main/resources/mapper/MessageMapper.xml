@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taoshao.friendshipline.mapper.MessageMapper">
+
+    <resultMap id="BaseResultMap" type="com.taoshao.friendshipline.model.domain.Message">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="sendUserId" column="sendUserId" jdbcType="BIGINT"/>
+            <result property="receiveUserId" column="receiveUserId" jdbcType="BIGINT"/>
+            <result property="teamId" column="teamId" jdbcType="BIGINT"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="sendTime" column="sendTime" jdbcType="TIMESTAMP"/>
+            <result property="receiveType" column="receiveType" jdbcType="TINYINT"/>
+            <result property="sendType" column="sendType" jdbcType="TINYINT"/>
+            <result property="readTime" column="readTime" jdbcType="TIMESTAMP"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="cancelTime" column="cancelTime" jdbcType="TIMESTAMP"/>
+            <result property="isCancel" column="isCancel" jdbcType="TINYINT"/>
+            <result property="isRead" column="isRead" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,sendUserId,receiveUserId,
+        teamId,content,sendTime,
+        receiveType,sendType,readTime,
+        type,cancelTime,isCancel,
+        isRead
+    </sql>
+</mapper>
