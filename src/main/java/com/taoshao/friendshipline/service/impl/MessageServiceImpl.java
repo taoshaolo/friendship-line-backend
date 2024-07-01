@@ -2,6 +2,8 @@ package com.taoshao.friendshipline.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.taoshao.friendshipline.common.ErrorCode;
+import com.taoshao.friendshipline.exception.BusinessException;
 import com.taoshao.friendshipline.model.domain.Message;
 import com.taoshao.friendshipline.model.domain.Team;
 import com.taoshao.friendshipline.model.domain.User;
@@ -47,16 +49,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
                 .eq("receiveUserId", loginUser.getId())
                 .orderByDesc("sendTime")
                 .list();
-        List<UserTeam> userTeamList = userTeamService.query()
-                .eq("userId", userId)
-                .list();
-        userTeamList.forEach(userTeam -> {
-            Long teamId = userTeam.getTeamId();
-            List<Message> roomMessageList = this.query()
-                    .eq("receiveUserId", teamId)
-                    .orderByAsc("sendTime")
-                    .list();
-        });
+
         messageList.forEach(message -> {
             Long receiveUserId = message.getReceiveUserId();
             Long sendUserId = message.getSendUserId();
@@ -71,9 +64,15 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
                 messageVo.setUserName(team.getName());
                 result.add(messageVo);
             } else {
-                if (!sendUserId.equals(loginUser.getId())) {
+                if (loginUser.getId().equals(receiveUserId)) {
                     // 通过发送方id拿到头像和姓名并赋值
                     User user = userService.getById(sendUserId);
+                    messageVo.setAvatarUrl(user.getAvatarUrl());
+                    messageVo.setUserName(user.getUsername());
+                    result.add(messageVo);
+                }else if (loginUser.getId().equals(sendUserId)){
+                    // 通过发送方id拿到头像和姓名并赋值
+                    User user = userService.getById(receiveUserId);
                     messageVo.setAvatarUrl(user.getAvatarUrl());
                     messageVo.setUserName(user.getUsername());
                     result.add(messageVo);
@@ -89,8 +88,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
 
         List<MessageVo> result = new ArrayList<>();
         List<Message> messageList = this.query()
-                .and(i -> i.eq("teamId",0).eq("receiveUserId", toUserId).eq("sendUserId", fromUserId))
-                .or(i -> i.and(j -> j.eq("teamId",0).eq("receiveUserId", fromUserId).eq("sendUserId", toUserId)))
+                .and(i -> i.eq("teamId", 0).eq("receiveUserId", toUserId).eq("sendUserId", fromUserId))
+                .or(i -> i.and(j -> j.eq("teamId", 0).eq("receiveUserId", fromUserId).eq("sendUserId", toUserId)))
                 .orderByAsc("sendTime")
                 .list();
 
@@ -98,8 +97,9 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             MessageVo messageVo = new MessageVo();
             BeanUtils.copyProperties(message, messageVo);
             Long sendUserId = messageVo.getSendUserId();
+
             // 通过发送方id查询头像和姓名
-            User sendUserInfo = userService.getById(message.getSendUserId());
+            User sendUserInfo = userService.getById(sendUserId);
             messageVo.setUserName(sendUserInfo.getUsername());
             messageVo.setAvatarUrl(sendUserInfo.getAvatarUrl());
             result.add(messageVo);
@@ -127,6 +127,15 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             result.add(messageVo);
         });
         return result;
+    }
+
+    @Override
+    public boolean delete(long id, User loginUser) {
+        //1. 校验参数
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return this.removeById(id);
     }
 }
 

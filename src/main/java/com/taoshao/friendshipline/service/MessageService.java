@@ -2,6 +2,7 @@ package com.taoshao.friendshipline.service;
 
 import com.taoshao.friendshipline.model.domain.Message;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.taoshao.friendshipline.model.domain.User;
 import com.taoshao.friendshipline.model.vo.MessageVo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,4 +36,12 @@ public interface MessageService extends IService<Message> {
      * @return
      */
     List<MessageVo> getRoomHistoryMessage(Long fromUserId, Long toRoomId);
+
+    /**
+     * 删除消息
+     * @param id
+     * @param loginUser
+     * @return
+     */
+    boolean delete(long id, User loginUser);
 }
